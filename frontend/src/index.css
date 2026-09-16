@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-ink-50 text-ink-800 dark:bg-ink-950 dark:text-ink-100;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  ::selection {
+    @apply bg-brass-300/60 text-ink-900;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-brass-400 ring-offset-2 ring-offset-ink-50 dark:ring-offset-ink-950;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme("colors.ink.300") transparent;
+  }
+  .dark .scrollbar-thin {
+    scrollbar-color: theme("colors.ink.600") transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme("colors.ink.300");
+    border-radius: 9999px;
+  }
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme("colors.ink.600");
+  }
+}
+
+/* Rendered markdown inside assistant messages */
+.prose-copilot {
+  @apply text-[15px] leading-7 text-ink-800 dark:text-ink-100;
+}
+.prose-copilot p {
+  @apply mb-3 last:mb-0;
+}
+.prose-copilot ul {
+  @apply mb-3 ml-5 list-disc space-y-1;
+}
+.prose-copilot ol {
+  @apply mb-3 ml-5 list-decimal space-y-1;
+}
+.prose-copilot strong {
+  @apply font-semibold text-ink-900 dark:text-white;
+}
+.prose-copilot a {
+  @apply text-brass-500 underline decoration-brass-300 underline-offset-2 hover:text-brass-600 dark:text-brass-200 dark:decoration-brass-500;
+}
+.prose-copilot code {
+  @apply rounded bg-ink-100 px-1.5 py-0.5 font-mono text-[13px] text-ink-700 dark:bg-ink-800 dark:text-ink-100;
+}
+.prose-copilot pre {
+  @apply mb-3 overflow-x-auto rounded-lg bg-ink-900 p-3 text-[13px] text-ink-50 dark:bg-black;
+}
+.prose-copilot pre code {
+  @apply bg-transparent p-0 text-inherit;
+}
+.prose-copilot blockquote {
+  @apply mb-3 border-l-2 border-brass-300 pl-3 text-ink-600 dark:border-brass-600 dark:text-ink-300;
+}
+.prose-copilot table {
+  @apply mb-3 w-full border-collapse text-sm;
+}
+.prose-copilot th,
+.prose-copilot td {
+  @apply border border-ink-200 px-2 py-1 text-left dark:border-ink-700;
+}
+
+@keyframes copilot-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+.thinking-dot {
+  animation: copilot-bounce 1.2s infinite ease-in-out;
+}
+
+@keyframes copilot-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.message-enter {
+  animation: copilot-fade-up 0.28s ease-out;
+}
