@@ -73,14 +73,16 @@ export function useConversations() {
     );
   }, []);
 
-  const addPendingExchange = useCallback(
+    const addPendingExchange = useCallback(
     (question) => {
-      let conversationId = activeId;
+      // Decide the id synchronously, before touching state.
+      const conversationId = activeId ?? makeId();
+
       setConversations((prev) => {
         const userMessage = { role: "user", content: question, createdAt: Date.now() };
         const placeholder = { role: "assistant", pending: true, createdAt: Date.now() };
 
-        if (conversationId) {
+        if (activeId) {
           return prev.map((c) =>
             c.id === conversationId
               ? { ...c, messages: [...c.messages, userMessage, placeholder], updatedAt: Date.now() }
@@ -89,13 +91,12 @@ export function useConversations() {
         }
 
         const newConversation = {
-          id: makeId(),
+          id: conversationId,
           title: deriveTitle(question),
           messages: [userMessage, placeholder],
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
-        conversationId = newConversation.id;
         return [newConversation, ...prev];
       });
       setActiveId(conversationId);

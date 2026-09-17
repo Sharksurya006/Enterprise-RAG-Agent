@@ -44,7 +44,7 @@ function SourceBadge({ sourceUsed }) {
   );
 }
 
-export default function SourceTrace({ sourceUsed, citations = [], trace = [], rewrittenQuery, question }) {
+export default function SourceTrace({ sourceUsed, citations = [], trace = [], rewrittenQuery, question, durationMs }) {
   const [open, setOpen] = useState(false);
   const hasTrace = trace.length > 0;
   const hasCitations = citations.length > 0;

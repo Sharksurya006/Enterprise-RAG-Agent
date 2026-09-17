@@ -26,7 +26,7 @@ def health():
 def chat(payload:ChatRequest):
 	try:
 		result = ask(payload.question)
-		write_audit(payload.question, result["source_used"], result.get("trace,[]"))
+		write_audit(payload.question, result["source_used"], result.get("trace",[]))
 		return {
 			"answer" : result["answer"],
 			"source_used" : result["source_used"],
