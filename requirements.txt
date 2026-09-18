@@ -13,6 +13,7 @@ python-docx
 langchain-text-splitters
 langchain-pinecone
 langchain-tavily
+nemoguardrails
 python-dotenv
 langchain-google-genai
 langchain-groq
