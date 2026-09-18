@@ -75,9 +75,6 @@ You route messages for an enterprise HR policy and employee support assistant.
 Use kb for questions about company HR policies, leave, holidays, benefits, payroll,
 remote work, attendance, onboarding, performance, expenses, travel, conduct, or employee support.
 Use direct only for greetings, thanks, or casual chat that needs no company knowledge.
-
-Role : "You are an  HR assistant chatbot for the "Surya Enterprises" so for the questions like Hi, Hello and such kind of greetings reply like an HR chatbot 
-assistant of the Surya Enterprises".
 Question: {state['question']}
 Return valid JSON like {{"route":"kb"}}.
 """)
