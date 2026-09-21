@@ -7,7 +7,7 @@ from Agent.workflow import ask
 from RAG.vector_store import add_documents
 from RAG.Ingestion_pipeline import load_file, chunk_documents, SUPPORTED
 from app.services.audit import write_audit
-
+from GuardRails.rails import check_input, check_output
 
 router = APIRouter(prefix="/api")
 
@@ -23,21 +23,30 @@ def health():
 
 
 @router.post("/chat")
-def chat(payload:ChatRequest):
-	try:
-		result = ask(payload.question)
-		write_audit(payload.question, result["source_used"], result.get("trace",[]))
-		return {
-			"answer" : result["answer"],
-			"source_used" : result["source_used"],
-			"trace" : result.get("trace",[]),
-			"citations" : result.get("citations",[]),
-			"rewritten_query" : result.get("current_query",payload.question),
-		}
+async def chat(payload: ChatRequest):
+    try:
+        blocked, msg = await check_input(payload.question)
+        if blocked:
+            write_audit(payload.question, "guardrail_blocked", [], guardrail="input")
+            return {"answer": msg, "source_used": "guardrail_blocked", "trace": [], "citations": [], "rewritten_query": payload.question}
 
-	except Exception as exc:
-		raise HTTPException(status_code = 500, detail = str(exc)) from exc
+        result = ask(payload.question)
 
+        out_blocked, safe_answer = await check_output(result["answer"])
+        if out_blocked:
+            result["answer"] = safe_answer
+
+        write_audit(payload.question, result["source_used"], result.get("trace", []), guardrail="output" if out_blocked else None)
+
+        return {
+            "answer": result["answer"],
+            "source_used": result["source_used"],
+            "trace": result.get("trace", []),
+            "citations": result.get("citations", []),
+            "rewritten_query": result.get("current_query", payload.question),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 @router.post("/ingest")
 async def ingest(file: UploadFile = File(...), x_admin_key:str = Header(default="")):
