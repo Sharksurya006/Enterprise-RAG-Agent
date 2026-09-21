@@ -1,25 +1,28 @@
+from pathlib import Path
+
 from nemoguardrails import LLMRails, RailsConfig
-from app.core.config import get_settings
-from pathlib import Path 
+from nemoguardrails.rails.llm.options import RailStatus, RailType
 
 BASE_DIR = Path(__file__).resolve().parents[1]
-settings = get_settings()
-
 CONFIG_PATH = BASE_DIR / "GuardRails" / "Config"
-config = RailsConfig.from_path(str(CONFIG_PATH))
-rails = LLMRails(config)
+rails = LLMRails(RailsConfig.from_path(str(CONFIG_PATH)))
+
 
 async def check_input(text: str):
-    res = await rails.generate_async(messages=[{"role": "user", "content": text}])
-    print("GUARDRAIL RAW RESPONSE:", res)  # temporary debug line
-    blocked = res["content"].startswith("I'm sorry") or getattr(res, "refused", False)
-    print("BLOCKED?", blocked)  # temporary debug line
-    return blocked, res["content"]
+    res = await rails.check_async(
+        [{"role": "user", "content": text}], rail_types=[RailType.INPUT]
+    )
+    blocked = res.status == RailStatus.BLOCKED
+    return blocked, (res.content if blocked else text)
 
-async def check_output(text: str):
-    res = await rails.generate_async(messages=[
-        {"role": "user", "content": "placeholder"},
-        {"role": "assistant", "content": text},
-    ])
-    blocked = res["content"] != text
-    return blocked, res["content"]
+
+async def check_output(question: str, answer: str):
+    res = await rails.check_async(
+        [
+            {"role": "user", "content": question},
+            {"role": "assistant", "content": answer},
+        ],
+        rail_types=[RailType.OUTPUT],
+    )
+    blocked = res.status == RailStatus.BLOCKED
+    return blocked, (res.content if blocked else answer)

@@ -31,7 +31,7 @@ def write_audit(question: str, source_used: str, trace: list[str], guardrail: st
     con = sqlite3.connect(settings.audit_db_path)
     con.execute(
         "INSERT INTO query_audit(created_at, question, source_used, trace_json, guardrail) VALUES (?, ?, ?, ?, ?)",
-        (datetime.now(timezone.utc).isoformat(), question, source_used, json.dumps(trace), guardrail),
+        (datetime.now(timezone.utc).isoformat(), question, source_used, json.dumps(trace), guardrail or None),
     )
     con.commit()
     con.close()

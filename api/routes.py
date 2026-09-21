@@ -1,4 +1,5 @@
 from pathlib import Path
+from starlette.concurrency import run_in_threadpool
 from fastapi import APIRouter, UploadFile, File, HTTPException, Header
 from pydantic import BaseModel, Field
 from typing import Annotated,List
@@ -30,11 +31,13 @@ async def chat(payload: ChatRequest):
             write_audit(payload.question, "guardrail_blocked", [], guardrail="input")
             return {"answer": msg, "source_used": "guardrail_blocked", "trace": [], "citations": [], "rewritten_query": payload.question}
 
-        result = ask(payload.question)
+        result = await run_in_threadpool(ask, payload.question)
 
-        out_blocked, safe_answer = await check_output(result["answer"])
+        out_blocked, safe_answer = await check_output(payload.question, result["answer"])
         if out_blocked:
             result["answer"] = safe_answer
+            result["source_used"] = "guardrail_blocked"
+            result["citations"] = []
 
         write_audit(payload.question, result["source_used"], result.get("trace", []), guardrail="output" if out_blocked else None)
 
