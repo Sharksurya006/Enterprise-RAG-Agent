@@ -6,7 +6,7 @@ import SourceTrace from "./SourceTrace";
 function AssistantMark() {
   return (
     <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-brass-300 bg-brass-50 font-serif text-xs font-semibold text-brass-600 dark:border-brass-600 dark:bg-ink-800 dark:text-brass-200">
-      HR
+      AI
     </div>
   );
 }

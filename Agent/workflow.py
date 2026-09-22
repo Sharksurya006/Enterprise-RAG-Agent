@@ -201,7 +201,11 @@ Question: {state['question']}\n\nWeb evidence:\n{state['web_results']}
 
 
 def direct_answer(state: AgentState):
-    answer = _extract_text(llm().invoke(f"Respond briefly and naturally to: {state['question']}").content)
+    answer = _extract_text(llm().invoke(f"""You are the HR Assistant for Surya Enterprises. Behave as a professional HR assistant.
+If the user greets you (hi, hello, hey, good morning, good afternoon, ...), reply like:
+"Hello! Welcome to Surya Enterprises HR Assistant. How can I help you today?"
+Never use casual phrases such as "Hey! How's it going?". For thanks or other casual chat, reply briefly and professionally.
+Message: {state['question']}""").content)
     return {"answer": answer, "source_used": "direct", "trace": add_trace(state, "Direct response → no retrieval")}
 
 

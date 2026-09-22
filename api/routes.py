@@ -9,10 +9,12 @@ from RAG.vector_store import add_documents
 from RAG.Ingestion_pipeline import load_file, chunk_documents, SUPPORTED
 from app.services.audit import write_audit
 from GuardRails.rails import check_input, check_output
+import logging 
 
 router = APIRouter(prefix="/api")
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 class ChatRequest(BaseModel):
 	question : Annotated[str, Field(min_length=2, max_length = 3000)]
@@ -26,20 +28,33 @@ def health():
 @router.post("/chat")
 async def chat(payload: ChatRequest):
     try:
-        blocked, msg = await check_input(payload.question)
+        try:
+            blocked, msg = await check_input(payload.question)
+        except Exception as exc:
+            logger.warning("Input guardrail unavailable: %s", exc)
+            raise HTTPException(
+                status_code=503,
+                detail="The safety check is temporarily unavailable. Please try again in a moment.",
+            ) from exc
         if blocked:
             write_audit(payload.question, "guardrail_blocked", [], guardrail="input")
             return {"answer": msg, "source_used": "guardrail_blocked", "trace": [], "citations": [], "rewritten_query": payload.question}
 
         result = await run_in_threadpool(ask, payload.question)
 
-        out_blocked, safe_answer = await check_output(payload.question, result["answer"])
-        if out_blocked:
-            result["answer"] = safe_answer
-            result["source_used"] = "guardrail_blocked"
-            result["citations"] = []
+        guardrail = None
+        try:
+            out_blocked, safe_answer = await check_output(payload.question, result["answer"])
+            if out_blocked:
+                result["answer"] = safe_answer
+                result["source_used"] = "guardrail_blocked"
+                result["citations"] = []
+                guardrail = "output"
+        except Exception as exc:
+            logger.warning("Output guardrail unavailable, returning answer unchecked: %s", exc)
+            guardrail = "output_unavailable"
 
-        write_audit(payload.question, result["source_used"], result.get("trace", []), guardrail="output" if out_blocked else None)
+        write_audit(payload.question, result["source_used"], result.get("trace", []), guardrail=guardrail)
 
         return {
             "answer": result["answer"],
@@ -48,9 +63,12 @@ async def chat(payload: ChatRequest):
             "citations": result.get("citations", []),
             "rewritten_query": result.get("current_query", payload.question),
         }
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
+    
 @router.post("/ingest")
 async def ingest(file: UploadFile = File(...), x_admin_key:str = Header(default="")):
 	if x_admin_key != settings.admin_api_key:

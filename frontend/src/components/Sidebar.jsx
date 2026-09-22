@@ -56,7 +56,7 @@ export default function Sidebar({
       <div className="flex items-center justify-between px-4 pt-4">
         <div className="flex items-baseline gap-1.5">
           <span className="font-serif text-lg font-semibold tracking-tight text-ink-900 dark:text-white">
-            HR Copilot
+            WorkGuide AI
           </span>
         </div>
         <button

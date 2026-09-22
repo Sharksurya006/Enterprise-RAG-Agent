@@ -26,13 +26,13 @@ export default function ChatView({ conversation, onSend, isSending, onOpenSideba
         >
           <Menu className="h-5 w-5" strokeWidth={1.75} />
         </button>
-        <span className="font-serif text-base font-semibold text-ink-900 dark:text-white">HR Copilot</span>
+        <span className="font-serif text-base font-semibold text-ink-900 dark:text-white">WorkGuide AI</span>
       </header>
 
       {backendOffline && (
         <div className="flex items-center justify-center gap-2 border-b  dark:bg-brass-700/10">
           <WifiOff className="h-3.5 w-3.5" strokeWidth={1.75} />
-          Can't reach the HR Copilot backend right now — check that the API server is running.
+          Can't reach the WorkGuide AI backend right now — check that the API server is running.
         </div>
       )}
 
